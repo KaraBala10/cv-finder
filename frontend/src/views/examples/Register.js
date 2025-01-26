@@ -21,7 +21,7 @@ import SimpleFooter from "components/Footers/SimpleFooter.js";
 
 const Register = () => {
   const navigate = useNavigate();
-  const mainRef = useRef(null); // ✅ Use useRef instead of string ref
+  const mainRef = useRef(null);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -53,7 +53,10 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("authToken", data.token);
+
         setSuccessMessage("Account created successfully!");
+
         setTimeout(() => navigate("/profile-page"), 1500);
       } else {
         setErrorMessage(data.error || "Signup failed.");
@@ -68,7 +71,6 @@ const Register = () => {
       <DemoNavbar />
       <main ref={mainRef}>
         {" "}
-        {/* ✅ Use useRef here */}
         <section className="section section-shaped section-lg">
           <div className="shape shape-style-1 bg-gradient-default">
             <span />
