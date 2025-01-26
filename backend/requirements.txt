@@ -3,3 +3,5 @@ djangorestframework
 psycopg2
 gunicorn
 django-environ
+django-cors-headers
+djangorestframework[authtoken]

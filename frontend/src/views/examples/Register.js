@@ -1,23 +1,4 @@
-/*!
-
-=========================================================
-* Argon Design System React - v1.1.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-design-system-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-design-system-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
-
-// reactstrap components
 import {
   Button,
   Card,
@@ -34,7 +15,6 @@ import {
   Col,
 } from "reactstrap";
 
-// core components
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import SimpleFooter from "components/Footers/SimpleFooter.js";
 
@@ -44,6 +24,50 @@ class Register extends React.Component {
     document.scrollingElement.scrollTop = 0;
     this.refs.main.scrollTop = 0;
   }
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: "",
+      email: "",
+      password: "",
+      errorMessage: "",
+      successMessage: "",
+    };
+  }
+
+  handleChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  handleSubmit = async (e) => {
+    e.preventDefault();
+    this.setState({ errorMessage: "", successMessage: "" });
+
+    try {
+      const response = await fetch("http://localhost:8000/api/signup/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          email: this.state.email,
+          password: this.state.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        this.setState({ successMessage: "Account created successfully!" });
+      } else {
+        this.setState({ errorMessage: data.error || "Signup failed." });
+      }
+    } catch (error) {
+      this.setState({ errorMessage: "Network error. Please try again." });
+    }
+  };
+
   render() {
     return (
       <>
@@ -109,7 +133,17 @@ class Register extends React.Component {
                       <div className="text-center text-muted mb-4">
                         <small>Or sign up with credentials</small>
                       </div>
-                      <Form role="form">
+                      {this.state.errorMessage && (
+                        <div className="alert alert-danger">
+                          {this.state.errorMessage}
+                        </div>
+                      )}
+                      {this.state.successMessage && (
+                        <div className="alert alert-success">
+                          {this.state.successMessage}
+                        </div>
+                      )}
+                      <Form onSubmit={this.handleSubmit}>
                         <FormGroup>
                           <InputGroup className="input-group-alternative mb-3">
                             <InputGroupAddon addonType="prepend">
@@ -117,7 +151,14 @@ class Register extends React.Component {
                                 <i className="ni ni-hat-3" />
                               </InputGroupText>
                             </InputGroupAddon>
-                            <Input placeholder="Name" type="text" />
+                            <Input
+                              placeholder="Username"
+                              type="text"
+                              name="username"
+                              value={this.state.username}
+                              onChange={this.handleChange}
+                              required
+                            />
                           </InputGroup>
                         </FormGroup>
                         <FormGroup>
@@ -127,7 +168,14 @@ class Register extends React.Component {
                                 <i className="ni ni-email-83" />
                               </InputGroupText>
                             </InputGroupAddon>
-                            <Input placeholder="Email" type="email" />
+                            <Input
+                              placeholder="Email"
+                              type="email"
+                              name="email"
+                              value={this.state.email}
+                              onChange={this.handleChange}
+                              required
+                            />
                           </InputGroup>
                         </FormGroup>
                         <FormGroup>
@@ -140,7 +188,10 @@ class Register extends React.Component {
                             <Input
                               placeholder="Password"
                               type="password"
-                              autoComplete="off"
+                              name="password"
+                              value={this.state.password}
+                              onChange={this.handleChange}
+                              required
                             />
                           </InputGroup>
                         </FormGroup>
@@ -181,7 +232,7 @@ class Register extends React.Component {
                           <Button
                             className="mt-4"
                             color="primary"
-                            type="button"
+                            type="submit"
                           >
                             Create account
                           </Button>

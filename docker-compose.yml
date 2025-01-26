@@ -14,6 +14,20 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
   backend:
     build: ./backend
     depends_on:
@@ -38,9 +52,16 @@ services:
 
   frontend:
     build: ./frontend
-    depends_on:
-      - backend
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     ports:
-      - "${FRONTEND_PORT}:3000"
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
+    command: npm start
+
+volumes:
+  pgadmin-data:

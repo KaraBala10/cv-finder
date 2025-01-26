@@ -1,23 +1,5 @@
-/*!
-
-=========================================================
-* Argon Design System React - v1.1.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-design-system-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-design-system-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import React from "react";
-
-// reactstrap components
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Card,
@@ -34,16 +16,56 @@ import {
   Col,
 } from "reactstrap";
 
-// core components
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import SimpleFooter from "components/Footers/SimpleFooter.js";
 
 class Login extends React.Component {
-  componentDidMount() {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-    this.refs.main.scrollTop = 0;
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: "",
+      password: "",
+      error: "",
+    };
   }
+
+  handleChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleSubmit = async (event) => {
+    event.preventDefault();
+    const { username, password } = this.state;
+
+    try {
+      const response = await fetch("http://localhost:8000/api/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Login successful!");
+        console.log("Token:", data.token); // Handle token storage if needed
+      } else {
+        this.setState({
+          error: data.detail || "Login failed. Please try again.",
+        });
+      }
+    } catch (error) {
+      this.setState({ error: "Network error. Please try again later." });
+    }
+  };
+
+  handleRegisterRedirect = (e) => {
+    e.preventDefault();
+    this.props.navigate("/register-page");
+  };
+
   render() {
     return (
       <>
@@ -72,8 +94,6 @@ class Login extends React.Component {
                         <Button
                           className="btn-neutral btn-icon"
                           color="default"
-                          href="#pablo"
-                          onClick={(e) => e.preventDefault()}
                         >
                           <span className="btn-inner--icon mr-1">
                             <img
@@ -89,8 +109,6 @@ class Login extends React.Component {
                         <Button
                           className="btn-neutral btn-icon ml-1"
                           color="default"
-                          href="#pablo"
-                          onClick={(e) => e.preventDefault()}
                         >
                           <span className="btn-inner--icon mr-1">
                             <img
@@ -109,7 +127,12 @@ class Login extends React.Component {
                       <div className="text-center text-muted mb-4">
                         <small>Or sign in with credentials</small>
                       </div>
-                      <Form role="form">
+                      {this.state.error && (
+                        <div className="alert alert-danger">
+                          {this.state.error}
+                        </div>
+                      )}
+                      <Form onSubmit={this.handleSubmit}>
                         <FormGroup className="mb-3">
                           <InputGroup className="input-group-alternative">
                             <InputGroupAddon addonType="prepend">
@@ -117,7 +140,13 @@ class Login extends React.Component {
                                 <i className="ni ni-email-83" />
                               </InputGroupText>
                             </InputGroupAddon>
-                            <Input placeholder="Email" type="email" />
+                            <Input
+                              name="username"
+                              placeholder="Username"
+                              value={this.state.username}
+                              onChange={this.handleChange}
+                              required
+                            />
                           </InputGroup>
                         </FormGroup>
                         <FormGroup>
@@ -128,9 +157,12 @@ class Login extends React.Component {
                               </InputGroupText>
                             </InputGroupAddon>
                             <Input
+                              name="password"
                               placeholder="Password"
                               type="password"
-                              autoComplete="off"
+                              value={this.state.password}
+                              onChange={this.handleChange}
+                              required
                             />
                           </InputGroup>
                         </FormGroup>
@@ -151,7 +183,7 @@ class Login extends React.Component {
                           <Button
                             className="my-4"
                             color="primary"
-                            type="button"
+                            type="submit"
                           >
                             Sign in
                           </Button>
@@ -173,7 +205,7 @@ class Login extends React.Component {
                       <a
                         className="text-light"
                         href="#pablo"
-                        onClick={(e) => e.preventDefault()}
+                        onClick={this.handleRegisterRedirect}
                       >
                         <small>Create new account</small>
                       </a>
@@ -190,4 +222,9 @@ class Login extends React.Component {
   }
 }
 
-export default Login;
+function LoginWithNavigate(props) {
+  const navigate = useNavigate();
+  return <Login {...props} navigate={navigate} />;
+}
+
+export default LoginWithNavigate;
