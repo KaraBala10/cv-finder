@@ -36,30 +36,28 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
+    const { username, password } = formData;
 
     try {
       const response = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("authToken", data.token); // ✅ Store token
         alert("Login successful!");
-        console.log("Token:", data.token); // Store token if needed
-
-        // ✅ Redirect to Profile Page after successful login
         navigate("/profile-page");
       } else {
-        setError(data.detail || "Login failed. Please try again.");
+        this.setState({
+          error: data.error || "Login failed. Please try again.",
+        });
       }
     } catch (error) {
-      setError("Network error. Please try again later.");
+      this.setState({ error: "Network error. Please try again." });
     }
   };
 
