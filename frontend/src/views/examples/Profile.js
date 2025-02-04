@@ -16,7 +16,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "reactstrap";
-import { FaEdit } from "react-icons/fa"; // ✅ Import edit icon
+import { FaEdit, FaSignOutAlt } from "react-icons/fa"; // Import Logout icon
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import SimpleFooter from "components/Footers/SimpleFooter.js";
 
@@ -72,6 +72,30 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
+  // Logout Function
+  const handleLogout = async () => {
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/logout/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        localStorage.removeItem("authToken"); // Remove token from storage
+        navigate("/login-page"); // Redirect to login page
+      } else {
+        setError("Failed to log out.");
+      }
+    } catch (error) {
+      setError("Network error. Please try again.");
+    }
+  };
+
   // Toggle Edit Modal
   const toggleEditModal = () => {
     setEditModal(!editModal);
@@ -90,7 +114,7 @@ const Profile = () => {
       const response = await fetch(
         "http://localhost:8000/api/profile/update/",
         {
-          method: "PUT", // ✅ Change to PUT
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Token ${token}`,
@@ -105,7 +129,6 @@ const Profile = () => {
       );
 
       if (response.ok) {
-        const data = await response.json();
         alert("Profile updated successfully!");
         setUser({
           ...user,
@@ -155,11 +178,21 @@ const Profile = () => {
           <Container>
             <Card className="card-profile shadow mt--300">
               <div className="px-4 py-5 mt-n5 position-relative">
-                {/* Edit Button at Top-Right Corner */}
+                {/* Edit & Logout Buttons */}
                 <div className="position-absolute top-0 end-0 p-3">
-                  <Button color="primary" size="sm" onClick={toggleEditModal}>
+                  <Button
+                    color="primary"
+                    size="sm"
+                    onClick={toggleEditModal}
+                    className="me-2"
+                  >
                     <FaEdit /> Edit
                   </Button>
+                  {user && (
+                    <Button color="danger" size="sm" onClick={handleLogout}>
+                      <FaSignOutAlt /> Logout
+                    </Button>
+                  )}
                 </div>
 
                 <Row className="justify-content-center">
@@ -231,8 +264,6 @@ const Profile = () => {
         </section>
       </main>
       <SimpleFooter />
-
-      {/* Edit Profile Modal */}
       <Modal isOpen={editModal} toggle={toggleEditModal}>
         <ModalHeader toggle={toggleEditModal}>Edit Profile</ModalHeader>
         <ModalBody>
