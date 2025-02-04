@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -23,12 +23,12 @@ const Login = () => {
   const navigate = useNavigate();
   const mainRef = useRef(null); // ✅ Use useRef instead of string ref
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
 
-  const [error, setError] = React.useState("");
+  const [error, setError] = useState("");
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -36,6 +36,8 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(""); // Reset error state before submission
+
     const { username, password } = formData;
 
     try {
@@ -50,14 +52,12 @@ const Login = () => {
       if (response.ok) {
         localStorage.setItem("authToken", data.token); // ✅ Store token
         alert("Login successful!");
-        navigate("/profile-page");
+        navigate("/profile-page"); // ✅ Redirect to Profile Page
       } else {
-        this.setState({
-          error: data.error || "Login failed. Please try again.",
-        });
+        setError(data.error || "Login failed. Please try again."); // ✅ Use useState to set error
       }
     } catch (error) {
-      this.setState({ error: "Network error. Please try again." });
+      setError("Network error. Please try again."); // ✅ Use useState to set error
     }
   };
 
@@ -65,8 +65,6 @@ const Login = () => {
     <>
       <DemoNavbar />
       <main ref={mainRef}>
-        {" "}
-        {/* ✅ Use useRef instead of string ref */}
         <section className="section section-shaped section-lg">
           <div className="shape shape-style-1 bg-gradient-default">
             <span />
