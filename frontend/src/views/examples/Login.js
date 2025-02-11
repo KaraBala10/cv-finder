@@ -179,7 +179,10 @@ const Login = () => {
                     <a
                       className="text-light"
                       href="#pablo"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/forgot-password-page");
+                      }}
                     >
                       <small>Forgot password?</small>
                     </a>
