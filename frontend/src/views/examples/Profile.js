@@ -16,7 +16,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "reactstrap";
-import { FaEdit, FaSignOutAlt } from "react-icons/fa"; // Import Logout icon
+import { FaEdit, FaSignOutAlt } from "react-icons/fa";
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import SimpleFooter from "components/Footers/SimpleFooter.js";
 
@@ -36,7 +36,9 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const token = localStorage.getItem("authToken");
+      const token =
+        sessionStorage.getItem("authToken") ||
+        localStorage.getItem("authToken");
 
       if (!token) {
         navigate("/login-page");
@@ -72,9 +74,10 @@ const Profile = () => {
     fetchUserProfile();
   }, [navigate]);
 
-  // Logout Function
+  // ✅ Logout Function - Ensures Complete Logout from Both Local & Session Storage
   const handleLogout = async () => {
-    const token = localStorage.getItem("authToken");
+    const token =
+      sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
 
     try {
       const response = await fetch("http://localhost:8000/api/logout/", {
@@ -86,8 +89,10 @@ const Profile = () => {
       });
 
       if (response.ok) {
-        localStorage.removeItem("authToken"); // Remove token from storage
-        navigate("/login-page"); // Redirect to login page
+        sessionStorage.removeItem("authToken"); // ✅ Clears session storage
+        localStorage.removeItem("authToken"); // ✅ Clears persistent storage
+
+        navigate("/login-page");
       } else {
         setError("Failed to log out.");
       }
@@ -108,7 +113,8 @@ const Profile = () => {
 
   // Submit Updated Profile
   const handleUpdateProfile = async () => {
-    const token = localStorage.getItem("authToken");
+    const token =
+      sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
 
     try {
       const response = await fetch(
@@ -264,6 +270,8 @@ const Profile = () => {
         </section>
       </main>
       <SimpleFooter />
+
+      {/* Edit Profile Modal */}
       <Modal isOpen={editModal} toggle={toggleEditModal}>
         <ModalHeader toggle={toggleEditModal}>Edit Profile</ModalHeader>
         <ModalBody>

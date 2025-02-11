@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react"; // ✅ Import useRef
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -29,11 +29,16 @@ const Register = () => {
     password: "",
   });
 
+  const [acceptPolicy, setAcceptPolicy] = useState(false); // ✅ Track "Accept Policy" checkbox
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCheckboxChange = () => {
+    setAcceptPolicy(!acceptPolicy); // ✅ Toggle accept policy state
   };
 
   const handleSubmit = async (e) => {
@@ -54,9 +59,7 @@ const Register = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-
         setSuccessMessage("Account created successfully!");
-
         setTimeout(() => navigate("/profile-page"), 1500);
       } else {
         setErrorMessage(data.error || "Signup failed.");
@@ -70,7 +73,6 @@ const Register = () => {
     <>
       <DemoNavbar />
       <main ref={mainRef}>
-        {" "}
         <section className="section section-shaped section-lg">
           <div className="shape shape-style-1 bg-gradient-default">
             <span />
@@ -194,6 +196,8 @@ const Register = () => {
                               className="custom-control-input"
                               id="customCheckRegister"
                               type="checkbox"
+                              checked={acceptPolicy}
+                              onChange={handleCheckboxChange} // ✅ Handle checkbox toggle
                             />
                             <label
                               className="custom-control-label"
@@ -213,7 +217,12 @@ const Register = () => {
                         </Col>
                       </Row>
                       <div className="text-center">
-                        <Button className="mt-4" color="primary" type="submit">
+                        <Button
+                          className="mt-4"
+                          color="primary"
+                          type="submit"
+                          disabled={!acceptPolicy} // ✅ Disable button if not checked
+                        >
                           Create account
                         </Button>
                       </div>

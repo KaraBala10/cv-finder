@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -21,22 +21,27 @@ import SimpleFooter from "components/Footers/SimpleFooter.js";
 
 const Login = () => {
   const navigate = useNavigate();
-  const mainRef = useRef(null); // ✅ Use useRef instead of string ref
+  const mainRef = useRef(null);
 
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
 
+  const [rememberMe, setRememberMe] = useState(false); // ✅ State for "Remember Me"
   const [error, setError] = useState("");
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
+  const handleRememberMeChange = () => {
+    setRememberMe(!rememberMe); // ✅ Toggle "Remember Me" state
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error state before submission
+    setError("");
 
     const { username, password } = formData;
 
@@ -50,16 +55,29 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("authToken", data.token); // ✅ Store token
+        // Store token based on "Remember Me" selection
+        if (rememberMe) {
+          localStorage.setItem("authToken", data.token); // ✅ Persistent login
+        } else {
+          sessionStorage.setItem("authToken", data.token); // ✅ Clears on browser close
+        }
+
         alert("Login successful!");
-        navigate("/profile-page"); // ✅ Redirect to Profile Page
+        navigate("/profile-page");
       } else {
-        setError(data.error || "Login failed. Please try again."); // ✅ Use useState to set error
+        setError(data.error || "Login failed. Please try again.");
       }
     } catch (error) {
-      setError("Network error. Please try again."); // ✅ Use useState to set error
+      setError("Network error. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      navigate("/profile-page");
+    }
+  }, [navigate]);
 
   return (
     <>
@@ -158,6 +176,8 @@ const Login = () => {
                           className="custom-control-input"
                           id="customCheckLogin"
                           type="checkbox"
+                          checked={rememberMe}
+                          onChange={handleRememberMeChange} // ✅ Handle Remember Me
                         />
                         <label
                           className="custom-control-label"
