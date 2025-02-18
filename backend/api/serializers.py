@@ -20,11 +20,13 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-# Profile Serializer
+# Profile Serializer (Includes Profile Picture)
 class ProfileSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.ImageField(required=False)
+
     class Meta:
         model = Profile
-        fields = ["bio", "location", "created_at"]
+        fields = ["bio", "country", "governorate", "profile_picture", "created_at"]
 
 
 # Resume Serializer

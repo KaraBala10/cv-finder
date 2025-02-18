@@ -1,3 +1,5 @@
+import imghdr
+
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -6,6 +8,7 @@ from django.http import JsonResponse
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -49,6 +52,8 @@ class LoginView(generics.GenericAPIView):
 
 
 # User Profile API
+
+
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -60,38 +65,47 @@ class UserProfileView(APIView):
         return Response(
             {
                 "user": UserSerializer(user).data,
-                "profile": ProfileSerializer(profile).data if profile else {},
+                "profile": (
+                    ProfileSerializer(profile, context={"request": request}).data
+                    if profile
+                    else {}
+                ),
                 "resumes": ResumeSerializer(resumes, many=True).data,
             },
             status=status.HTTP_200_OK,
         )
 
 
-# Profile Update
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def update_user_and_profile(self, user, profile, data):
-        user.username = data.get("username", user.username)
-        user.email = data.get("email", user.email)
-        profile.bio = data.get("bio", profile.bio)
-        profile.location = data.get("location", profile.location)
+    def put(self, request):
+        profile = request.user.profile
+        profile.bio = request.data.get("bio", profile.bio)
+        profile.country = request.data.get("country", profile.country)
+        profile.governorate = request.data.get("governorate", profile.governorate)
 
-        user.save()
+        if "profile_picture" in request.FILES:
+            image_file = request.FILES["profile_picture"]
+            image_type = imghdr.what(image_file)
+
+            if image_type not in ["jpeg", "png", "gif", "bmp", "tiff", "webp"]:
+                return Response({"error": "Only image files are allowed."}, status=400)
+
+            profile.profile_picture = image_file
+
         profile.save()
 
-    def put(self, request):
-        user = request.user
-        profile, _ = Profile.objects.get_or_create(user=user)
-
-        self.update_user_and_profile(user, profile, request.data)
-
         return Response(
-            {"message": "Profile updated successfully"}, status=status.HTTP_200_OK
+            {
+                "user": {
+                    "id": request.user.id,
+                    "username": request.user.username,
+                    "email": request.user.email,
+                },
+                "profile": ProfileSerializer(profile).data,
+            }
         )
-
-    def patch(self, request):
-        return self.put(request)
 
 
 # Logout
