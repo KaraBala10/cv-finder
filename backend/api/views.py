@@ -1,25 +1,25 @@
 import imghdr
 
 from django.contrib.auth import authenticate, update_session_auth_hash
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.http import JsonResponse
+from django.utils.crypto import get_random_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
-from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import CustomUser  # Ensure you import your CustomUser model
 from .models import Profile, Resume
 from .serializers import ProfileSerializer, ResumeSerializer, UserSerializer
+from .tasks import send_verification_email
 
 
-# User Registration (Sign Up)
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
@@ -27,6 +27,21 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        # Ensure the Profile is created for the new user
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        # Generate the 8-digit verification code
+        verification_code = get_random_string(length=8, allowed_chars="0123456789")
+
+        # Store the verification code in the Profile model
+        profile.verification_code = verification_code
+        profile.save()
+
+        # Send the verification code to the user's email asynchronously
+        send_verification_email.delay(user.email, verification_code)
+
+        # Create a token for the user and return the response
         token, _ = Token.objects.get_or_create(user=user)
         return Response(
             {"token": token.key, "user": serializer.data},
@@ -136,8 +151,8 @@ class PasswordResetView(APIView):
             )
 
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
             return JsonResponse(
                 {"error": "User with this email does not exist."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -171,8 +186,8 @@ class PasswordResetConfirmView(APIView):
     def post(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64).decode("utf-8")
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = CustomUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return JsonResponse(
                 {"error": "Invalid token or user."}, status=status.HTTP_400_BAD_REQUEST
             )
