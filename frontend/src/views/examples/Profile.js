@@ -237,8 +237,10 @@ const Profile = () => {
                 <>
                   <h2>{user.username}</h2>
                   <p className="text-muted">{user.email}</p>
-                  <p>{profile.country || "Country not set"}</p>
-                  <p>{profile.governorate || "Governorate not set"}</p>
+                  <p>
+                    {profile.country || "Country not set"}
+                    {profile.governorate ? ", " + profile.governorate : ""}
+                  </p>
                   <p>{profile.bio || "No bio available"}</p>
                   <hr className="my-4" />
                   <h4 className="font-weight-bold">Uploaded Resumes</h4>
