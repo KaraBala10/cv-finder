@@ -193,8 +193,8 @@ const Profile = () => {
       </section>
       <Container>
         <Card className="card-profile shadow mt--300">
-          <div className="px-4 py-5 mt-n5 position-relative">
-            <div className="position-absolute top-0 end-0 p-3">
+          <div className="position-relative">
+            <div className="d-flex justify-content-end p-3">
               <Button
                 color="primary"
                 size="sm"
@@ -214,7 +214,12 @@ const Profile = () => {
               <Col lg="3" className="text-center">
                 <div
                   className="card-profile-image mb-2"
-                  style={{ marginTop: "-55px" }}
+                  style={{
+                    marginTop: "-55px",
+                    maxWidth: "150px",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                  }}
                 >
                   <img
                     alt="Profile"
