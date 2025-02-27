@@ -47,20 +47,26 @@ const Register = () => {
     setSuccessMessage("");
 
     try {
-      const response = await fetch("http://localhost:8000/api/signup/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/signup/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("authToken", data.token);
-        setSuccessMessage("Account created successfully!");
-        setTimeout(() => navigate("/profile-page"), 1500);
+        // Redirect to the verify email page, passing the email and username
+        navigate(
+          `/verify-email?email=${encodeURIComponent(
+            formData.email
+          )}&username=${encodeURIComponent(formData.username)}`
+        );
       } else {
         setErrorMessage(data.error || "Signup failed.");
       }

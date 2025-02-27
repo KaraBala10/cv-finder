@@ -28,6 +28,7 @@ const Profile = () => {
   const [resumes, setResumes] = useState([]);
   const [error, setError] = useState("");
   const [editModal, setEditModal] = useState(false);
+  const [invalidTokenDialog, setInvalidTokenDialog] = useState(false);
   const [editForm, setEditForm] = useState({
     username: "",
     email: "",
@@ -37,8 +38,38 @@ const Profile = () => {
   const [country, setCountry] = useState("");
   const [region, setRegion] = useState("");
 
+  // ✅ Handle Logout
+  const handleLogout = async () => {
+    const token =
+      sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+
+    try {
+      await fetch(`${process.env.REACT_APP_API_HOST}/logout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+    } catch (error) {
+      // Optionally handle logout error here.
+    } finally {
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      navigate("/login-page");
+    }
+  };
+
+  // Function to check for invalid token in response data.
+  const checkInvalidToken = (data) => {
+    if (data.detail === "Invalid token.") {
+      setInvalidTokenDialog(true);
+      return true;
+    }
+    return false;
+  };
+
   // ✅ Fetch user profile data
-  // ✅ Define fetchUserProfile function before using it
   const fetchUserProfile = async () => {
     const token =
       sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
@@ -49,12 +80,20 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/profile/", {
-        method: "GET",
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/profile/`,
+        {
+          method: "GET",
+          headers: { Authorization: `Token ${token}` },
+        }
+      );
 
       const data = await response.json();
+
+      // Check for invalid token response.
+      if (checkInvalidToken(data)) {
+        return;
+      }
 
       if (response.ok) {
         setUser(data.user);
@@ -66,12 +105,8 @@ const Profile = () => {
           bio: data.profile.bio || "",
           profile_picture: null,
         });
-
         setCountry(data.profile.country || "");
         setRegion(data.profile.governorate || "");
-
-        console.log("Fetched Country:", data.profile.country);
-        console.log("Fetched Governorate:", data.profile.governorate);
       } else {
         setError("Failed to fetch profile data.");
       }
@@ -80,12 +115,12 @@ const Profile = () => {
     }
   };
 
-  // ✅ Call fetchUserProfile inside useEffect to load data initially
+  // ✅ Call fetchUserProfile on initial load
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
-  // ✅ Call fetchUserProfile inside handleUpdateProfile to refresh data
+  // ✅ Update Profile handler
   const handleUpdateProfile = async () => {
     const token =
       sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
@@ -103,7 +138,7 @@ const Profile = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/api/profile/update/",
+        `${process.env.REACT_APP_API_HOST}/profile/update/`,
         {
           method: "PUT",
           headers: {
@@ -115,21 +150,24 @@ const Profile = () => {
 
       const updatedData = await response.json();
 
+      // Check for invalid token response.
+      if (checkInvalidToken(updatedData)) {
+        return;
+      }
+
       if (response.ok) {
         setUser(updatedData.user);
         setProfile(updatedData.profile);
-
         setEditForm({
           username: updatedData.user.username,
           email: updatedData.user.email,
           bio: updatedData.profile.bio,
           profile_picture: null,
         });
-
         setCountry(updatedData.profile.country);
         setRegion(updatedData.profile.governorate);
 
-        // ✅ Refresh profile picture after updating
+        // Refresh profile picture after updating.
         fetchUserProfile();
 
         alert("Profile updated successfully!");
@@ -142,30 +180,10 @@ const Profile = () => {
     }
   };
 
-  // ✅ Handle Logout
-  const handleLogout = async () => {
-    const token =
-      sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
-
-    try {
-      const response = await fetch("http://localhost:8000/api/logout/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        sessionStorage.removeItem("authToken");
-        localStorage.removeItem("authToken");
-        navigate("/login-page");
-      } else {
-        setError("Failed to log out.");
-      }
-    } catch (error) {
-      setError("Network error. Please try again.");
-    }
+  // Handler for closing the invalid token dialog.
+  const handleCloseInvalidTokenDialog = () => {
+    setInvalidTokenDialog(false);
+    handleLogout();
   };
 
   return (
@@ -345,6 +363,19 @@ const Profile = () => {
           </Button>
           <Button color="primary" onClick={handleUpdateProfile}>
             Save Changes
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Invalid Token Modal */}
+      <Modal isOpen={invalidTokenDialog}>
+        <ModalHeader>Session Expired</ModalHeader>
+        <ModalBody>
+          Your session has expired or is invalid. Please log in again.
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={handleCloseInvalidTokenDialog}>
+            OK
           </Button>
         </ModalFooter>
       </Modal>
