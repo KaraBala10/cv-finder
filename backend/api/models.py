@@ -9,11 +9,13 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
+from .storage import OverwriteStorage  
+
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     verification_code = models.CharField(max_length=8, blank=True, null=True)
-    failed_attempts = models.IntegerField(default=0)  # Track failed attempts
+    failed_attempts = models.IntegerField(default=0)
     verification_code_sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -77,8 +79,13 @@ class Profile(models.Model):
 class Resume(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to="resumes/")
+    file = models.FileField(upload_to="resumes/", storage=OverwriteStorage())
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.title}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and Resume.objects.filter(user=self.user).exists():
+            raise ValidationError("You can only upload one resume.")
+        super().save(*args, **kwargs)
