@@ -10,3 +10,4 @@ sqlparse==0.5.3
 pillow==11.1.0
 celery==5.4.0
 redis==5.2.1
+django-redis==5.4.0
