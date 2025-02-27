@@ -43,7 +43,6 @@ const Profile = () => {
   const [country, setCountry] = useState("");
   const [region, setRegion] = useState("");
 
-  // New state for resume upload
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeError, setResumeError] = useState("");
   const [resumeSuccess, setResumeSuccess] = useState("");
@@ -54,7 +53,9 @@ const Profile = () => {
     const token =
       sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
     if (!token) {
-      navigate("/login-page");
+      if (!routeUsername) {
+        navigate("/login-page");
+      }
       return;
     }
     try {
@@ -177,7 +178,6 @@ const Profile = () => {
 
   const handleCloseInvalidTokenDialog = () => {
     setInvalidTokenDialog(false);
-    // Optionally call logout here
     handleLogout();
   };
 
