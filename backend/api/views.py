@@ -1,9 +1,15 @@
 import imghdr
+from datetime import timedelta
 
-from django.contrib.auth import authenticate, update_session_auth_hash
+import redis
+from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status
@@ -12,41 +18,181 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CustomUser  # Ensure you import your CustomUser model
-from .models import Profile, Resume
+from .models import CustomUser, Profile, Resume
 from .serializers import ProfileSerializer, ResumeSerializer, UserSerializer
 from .tasks import send_verification_email
 
+r = redis.StrictRedis.from_url(settings.CACHES["default"]["LOCATION"])
 
-class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
+MAX_ATTEMPTS = 3
+
+
+User = get_user_model()
+
+
+class RegisterView(APIView):
     permission_classes = [AllowAny]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+    def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-        # Ensure the Profile is created for the new user
-        profile, _ = Profile.objects.get_or_create(user=user)
+        # Validate inputs
+        if not username or not email or not password:
+            return Response(
+                {"error": "All fields are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Generate the 8-digit verification code
-        verification_code = get_random_string(length=8, allowed_chars="0123456789")
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": "Username already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Store the verification code in the Profile model
-        profile.verification_code = verification_code
-        profile.save()
+        existing_user = get_user_model().objects.filter(email=email).first()
+        if existing_user:
+            if existing_user.is_active:
+                return Response(
+                    {"error": "Email already exists and is active."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+                # Update the inactive user's information for re-registration.
+                existing_user.username = username
+                existing_user.set_password(password)
+                verification_code = get_random_string(
+                    length=8, allowed_chars="0123456789"
+                )
+                existing_user.verification_code = verification_code
+                existing_user.is_active = False  # remain inactive until verified
+                try:
+                    existing_user.save()
+                except IntegrityError as e:
+                    return Response(
+                        {
+                            "error": f"An error occurred while updating the account: {e}."
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+                # Send verification email for updated account.
+                send_verification_email.delay(email, verification_code)
+                return Response(
+                    {
+                        "message": "Registration successful. Please check your email for verification."
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+        else:
+            # Create a new user if the email is not found at all.
+            try:
+                user = User(username=username, email=email)
+                user.set_password(password)
+                verification_code = get_random_string(
+                    length=8, allowed_chars="0123456789"
+                )
+                user.verification_code = verification_code
+                user.is_active = False
+                user.save()
+            except IntegrityError as e:
+                if "duplicate key value violates unique constraint" in str(e):
+                    return Response(
+                        {"error": "A user with this email already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                return Response(
+                    {"error": "An error occurred while creating the account."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            send_verification_email.delay(email, verification_code)
+            return Response(
+                {
+                    "message": "Registration successful. Please check your email for verification."
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
-        # Send the verification code to the user's email asynchronously
-        send_verification_email.delay(user.email, verification_code)
 
-        # Create a token for the user and return the response
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {"token": token.key, "user": serializer.data},
-            status=status.HTTP_201_CREATED,
-        )
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        username = request.data.get("username")
+        verification_code = request.data.get("verification_code")
+
+        if not email or not verification_code:
+            return Response(
+                {"error": "Email and verification code are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        attempt_key = f"failed_attempts:{email}:{username}"
+        failed_attempts = r.get(attempt_key)
+        last_failed_time_key = f"last_failed_time:{email}:{username}"
+
+        if failed_attempts and int(failed_attempts) >= MAX_ATTEMPTS:
+            new_verification_code = get_random_string(
+                length=8, allowed_chars="0123456789"
+            )
+            user = (
+                get_user_model().objects.filter(email=email, username=username).first()
+            )
+            if user:
+                user.verification_code = new_verification_code
+                user.save()
+                send_verification_email.delay(email, verification_code)
+            time_left = timedelta(seconds=int(r.ttl(attempt_key)))
+            return Response(
+                {
+                    "error": f"Too many failed attempts. Please try again in {time_left}."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        users = get_user_model().objects.filter(email=email, username=username)
+
+        if users.count() > 1:
+            return Response(
+                {"error": "Multiple users found with this email address."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if users.exists():
+            user = users.first()
+
+            if user.verification_code != verification_code:
+                r.incr(attempt_key)
+
+                r.expire(attempt_key, 3600)
+
+                r.set(last_failed_time_key, timezone.now().timestamp())
+
+                return Response(
+                    {"error": "Invalid verification code."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            r.delete(attempt_key)
+            r.delete(last_failed_time_key)
+
+            user.is_active = True
+            user.save()
+
+            try:
+                Profile.objects.get(user=user)
+            except ObjectDoesNotExist:
+                Profile.objects.create(user=user)
+
+            return Response(
+                {"message": "Email verified successfully. You can now log in."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"error": "User not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 # User Login
