@@ -8,7 +8,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -59,7 +60,6 @@ class RegisterView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             else:
-                # Update the inactive user's information for re-registration.
                 existing_user.username = username
                 existing_user.set_password(password)
                 verification_code = get_random_string(
@@ -237,6 +237,28 @@ class UserProfileView(APIView):
         )
 
 
+class PublicUserProfileView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username, *args, **kwargs):
+        user = get_object_or_404(User, username=username)
+        profile = Profile.objects.filter(user=user).first()
+        resumes = Resume.objects.filter(user=user)
+
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "profile": (
+                    ProfileSerializer(profile, context={"request": request}).data
+                    if profile
+                    else {}
+                ),
+                "resumes": ResumeSerializer(resumes, many=True).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -304,13 +326,11 @@ class PasswordResetView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Generate password reset token and UID
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(str(user.pk).encode("utf-8"))
 
         reset_url = f"http://localhost:3000/reset-password/{uid}/{token}/"
 
-        # Send the reset link to the user's email
         send_mail(
             "Password Reset Request",
             f"To reset your password, please click the following link: {reset_url}",
@@ -350,13 +370,112 @@ class PasswordResetConfirmView(APIView):
                 {"error": "Password is required."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Update user's password and maintain session
         user.set_password(new_password)
         user.save()
-        update_session_auth_hash(
-            request, user
-        )  # Keep the user logged in after password change
-
+        update_session_auth_hash(request, user)
         return JsonResponse(
             {"message": "Password reset successfully."}, status=status.HTTP_200_OK
         )
+
+
+class ResumeUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        title = request.data.get("title")
+        file = request.FILES.get("file")
+
+        if not title or not file:
+            return Response(
+                {"error": "Both title and file are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if Resume.objects.filter(user=user).exists():
+            return Response(
+                {"error": "You can only upload one resume."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if "." not in file.name:
+            return Response(
+                {"error": "Your file does not have an extension."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ext = file.name.split(".")[-1]
+        file.name = f"{title}.{ext}"
+
+        resume = Resume(user=user, title=title, file=file)
+        resume.save()
+
+        return Response(
+            {"message": "Resume uploaded successfully."},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ResumeDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        resume_id = kwargs.get("resume_id")
+        user = request.user
+
+        try:
+            resume = Resume.objects.get(id=resume_id, user=user)
+            resume.delete()
+            return Response(
+                {"message": "Resume deleted successfully."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Resume.DoesNotExist:
+            return Response(
+                {"error": "Resume not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class ResumeViewPDF(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username, *args, **kwargs):
+        user = get_object_or_404(User, username=username)
+        resume = get_object_or_404(Resume, user=user)
+        if not resume.file.name.lower().endswith(".pdf"):
+            raise Http404("Resume is not a PDF file.")
+        expected_suffix = f"{user.username}_resume.pdf"
+        if not resume.file.name.endswith(expected_suffix):
+            pass
+        try:
+            return FileResponse(
+                open(resume.file.path, "rb"), content_type="application/pdf"
+            )
+        except FileNotFoundError:
+            raise Http404("Resume file not found.")
+
+
+class ResumeDownloadView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username, *args, **kwargs):
+        # Get the user by username
+        user = get_object_or_404(User, username=username)
+        # Get the resume associated with the user
+        resume = get_object_or_404(Resume, user=user)
+
+        # Ensure the file is a PDF (optional)
+        if not resume.file.name.lower().endswith(".pdf"):
+            raise Http404("Resume is not a PDF file.")
+
+        try:
+            # Open the file and create a FileResponse
+            response = FileResponse(
+                open(resume.file.path, "rb"), content_type="application/pdf"
+            )
+            # Set Content-Disposition header to force download with a specific filename
+            response["Content-Disposition"] = (
+                f'attachment; filename="{user.username}_resume.pdf"'
+            )
+            return response
+        except FileNotFoundError:
+            raise Http404("Resume file not found.")

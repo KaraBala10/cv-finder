@@ -5,7 +5,12 @@ from .views import (
     LogoutView,
     PasswordResetConfirmView,
     PasswordResetView,
+    PublicUserProfileView,
     RegisterView,
+    ResumeDeleteView,
+    ResumeDownloadView,
+    ResumeUploadView,
+    ResumeViewPDF,
     UpdateProfileView,
     UserProfileView,
     VerifyEmailView,
@@ -23,5 +28,24 @@ urlpatterns = [
         "password-reset/confirm/<uidb64>/<token>/",
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
+    ),
+    path("resume/upload/", ResumeUploadView.as_view(), name="resume-upload"),
+    path(
+        "resume/delete/<int:resume_id>/",
+        ResumeDeleteView.as_view(),
+        name="resume-delete",
+    ),
+    path(
+        "resume/view/<str:username>/", ResumeViewPDF.as_view(), name="resume-view-pdf"
+    ),
+    path(
+        "resume/download/<str:username>/",
+        ResumeDownloadView.as_view(),
+        name="resume-download",
+    ),
+    path(
+        "profile/<str:username>/",
+        PublicUserProfileView.as_view(),
+        name="public-profile",
     ),
 ]
