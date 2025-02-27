@@ -27,6 +27,7 @@ import Index from "views/Index.js";
 import Landing from "views/examples/Landing.js";
 import Login from "views/examples/Login.js";
 import ForgotPassword from "views/examples/ForgotPassword.js";
+import VerifyEmail from "views/examples/VerifyEmail.js";
 import ResetPassword from "views/examples/ResetPassword.js";
 import Profile from "views/examples/Profile.js";
 import Register from "views/examples/Register.js";
@@ -47,6 +48,7 @@ root.render(
       />
       <Route path="/profile-page" exact element={<Profile />} />
       <Route path="/register-page" exact element={<Register />} />
+      <Route path="/verify-email" exact element={<VerifyEmail />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>

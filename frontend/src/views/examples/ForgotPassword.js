@@ -30,12 +30,11 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset error state before submission
-    setMessage(""); // Reset message state
-
+    setError("");
+    setMessage("");
     try {
       const response = await fetch(
-        "http://localhost:8000/api/password-reset/",
+        `${process.env.REACT_APP_API_HOST}/password-reset/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
