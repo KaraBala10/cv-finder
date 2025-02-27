@@ -4,10 +4,13 @@ from django.core.mail import send_mail
 
 
 @shared_task
-def send_verification_email(user_email, verification_code):
-    subject = "Your Verification Code"
+def send_verification_email(email, verification_code):
+    subject = "Email Verification"
     message = f"Your verification code is: {verification_code}"
-    from_email = "from@example.com"
-    recipient_list = [user_email]
-
-    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=False,
+    )
