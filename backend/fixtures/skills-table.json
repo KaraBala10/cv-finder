@@ -1,0 +1,604 @@
+[
+  {
+    "model": "api.skill",
+    "pk": 1,
+    "fields": {
+      "name": "Python"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 2,
+    "fields": {
+      "name": "JavaScript"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 3,
+    "fields": {
+      "name": "Java"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 4,
+    "fields": {
+      "name": "C++"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 5,
+    "fields": {
+      "name": "C#"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 6,
+    "fields": {
+      "name": "Ruby"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 7,
+    "fields": {
+      "name": "PHP"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 8,
+    "fields": {
+      "name": "Go"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 9,
+    "fields": {
+      "name": "Swift"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 10,
+    "fields": {
+      "name": "Kotlin"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 11,
+    "fields": {
+      "name": "Rust"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 12,
+    "fields": {
+      "name": "TypeScript"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 13,
+    "fields": {
+      "name": "SQL"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 14,
+    "fields": {
+      "name": "HTML"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 15,
+    "fields": {
+      "name": "CSS"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 16,
+    "fields": {
+      "name": "Bash"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 17,
+    "fields": {
+      "name": "Shell Scripting"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 18,
+    "fields": {
+      "name": "Scala"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 19,
+    "fields": {
+      "name": "R"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 20,
+    "fields": {
+      "name": "Perl"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 21,
+    "fields": {
+      "name": "Dart"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 22,
+    "fields": {
+      "name": "MATLAB"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 23,
+    "fields": {
+      "name": "Objective-C"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 24,
+    "fields": {
+      "name": "Elixir"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 25,
+    "fields": {
+      "name": "Haskell"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 26,
+    "fields": {
+      "name": "Clojure"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 27,
+    "fields": {
+      "name": "Erlang"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 28,
+    "fields": {
+      "name": "Groovy"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 29,
+    "fields": {
+      "name": "Visual Basic"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 30,
+    "fields": {
+      "name": "Assembly"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 31,
+    "fields": {
+      "name": "PowerShell"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 32,
+    "fields": {
+      "name": "SQL Server"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 33,
+    "fields": {
+      "name": "MySQL"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 34,
+    "fields": {
+      "name": "PostgreSQL"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 35,
+    "fields": {
+      "name": "MongoDB"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 36,
+    "fields": {
+      "name": "Redis"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 37,
+    "fields": {
+      "name": "Oracle DB"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 38,
+    "fields": {
+      "name": "Firebase"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 39,
+    "fields": {
+      "name": "GraphQL"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 40,
+    "fields": {
+      "name": "REST API"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 41,
+    "fields": {
+      "name": "Docker"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 42,
+    "fields": {
+      "name": "Kubernetes"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 43,
+    "fields": {
+      "name": "AWS"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 44,
+    "fields": {
+      "name": "Azure"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 45,
+    "fields": {
+      "name": "Google Cloud Platform"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 46,
+    "fields": {
+      "name": "Terraform"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 47,
+    "fields": {
+      "name": "Ansible"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 48,
+    "fields": {
+      "name": "Jenkins"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 49,
+    "fields": {
+      "name": "Git"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 50,
+    "fields": {
+      "name": "GitHub"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 51,
+    "fields": {
+      "name": "GitLab"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 52,
+    "fields": {
+      "name": "Bitbucket"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 53,
+    "fields": {
+      "name": "CI/CD"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 54,
+    "fields": {
+      "name": "Agile"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 55,
+    "fields": {
+      "name": "Scrum"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 56,
+    "fields": {
+      "name": "Kanban"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 57,
+    "fields": {
+      "name": "Linux"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 58,
+    "fields": {
+      "name": "Unix"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 59,
+    "fields": {
+      "name": "Windows Server"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 60,
+    "fields": {
+      "name": "Nginx"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 61,
+    "fields": {
+      "name": "Apache"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 62,
+    "fields": {
+      "name": "React"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 63,
+    "fields": {
+      "name": "Angular"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 64,
+    "fields": {
+      "name": "Vue.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 65,
+    "fields": {
+      "name": "Django"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 66,
+    "fields": {
+      "name": "Flask"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 67,
+    "fields": {
+      "name": "Ruby on Rails"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 68,
+    "fields": {
+      "name": "Spring"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 69,
+    "fields": {
+      "name": "Laravel"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 70,
+    "fields": {
+      "name": "Express.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 71,
+    "fields": {
+      "name": "Node.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 72,
+    "fields": {
+      "name": "Meteor"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 73,
+    "fields": {
+      "name": "Svelte"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 74,
+    "fields": {
+      "name": "Next.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 75,
+    "fields": {
+      "name": "Nuxt.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 76,
+    "fields": {
+      "name": "Ember.js"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 77,
+    "fields": {
+      "name": "Bootstrap"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 78,
+    "fields": {
+      "name": "Tailwind CSS"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 79,
+    "fields": {
+      "name": "Material UI"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 80,
+    "fields": {
+      "name": "jQuery"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 81,
+    "fields": {
+      "name": "ElasticSearch"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 82,
+    "fields": {
+      "name": "Apache Kafka"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 83,
+    "fields": {
+      "name": "RabbitMQ"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 84,
+    "fields": {
+      "name": "Microservices"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 85,
+    "fields": {
+      "name": "Serverless"
+    }
+  },
+  {
+    "model": "api.skill",
+    "pk": 86,
+    "fields": {
+      "name": "WebSockets"
+    }
+  }
+]

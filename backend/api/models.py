@@ -9,7 +9,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from .storage import OverwriteStorage  
+from .storage import OverwriteStorage
 
 
 class CustomUser(AbstractUser):
@@ -28,9 +28,6 @@ class CustomUser(AbstractUser):
         ]
 
     def clean(self):
-        """
-        Custom validation to ensure only one active user with the same email exists.
-        """
         if self.is_active:
             if (
                 CustomUser.objects.filter(email=self.email, is_active=True)
@@ -54,9 +51,6 @@ class CustomUser(AbstractUser):
 
 @receiver(pre_save, sender=CustomUser)
 def deactivate_other_users_with_same_email(sender, instance, **kwargs):
-    """
-    Deactivates other users with the same email when a user is being activated.
-    """
     if instance.is_active:
         CustomUser.objects.filter(email=instance.email, is_active=False).delete()
 
@@ -76,11 +70,19 @@ class Profile(models.Model):
         return self.user.username
 
 
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Resume(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to="resumes/", storage=OverwriteStorage())
     created_at = models.DateTimeField(auto_now_add=True)
+    skills = models.ManyToManyField(Skill, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.title}"
